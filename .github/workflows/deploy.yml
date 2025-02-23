@@ -35,6 +35,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
             cd ${{ secrets.REMOTE_PATH }}
+            docker network create my-network || true
             docker-compose down
             docker-compose build
             docker-compose up -d
