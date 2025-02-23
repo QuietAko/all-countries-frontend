@@ -1,32 +1,37 @@
-name: Deploy to Server
+name: Deploy Frontend
 
 on:
   push:
     branches:
-      - master 
+      - master  # Укажите ветку, которую хотите использовать для деплоя
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Шаг 1: Клонирование репозитория
       - name: Checkout code
         run: |
-          git clone https://github.com/QuietAko/all-countries.git .
+          git clone https://github.com/QuietAko/all-countries-frontend.git .
           git checkout $GITHUB_SHA
 
+      # Шаг 2: Настройка SSH
       - name: Install SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
+
+      # Шаг 3: Синхронизация файлов с сервером
       - name: Sync files to server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
             . ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_PATH }}
 
-      - name: Docker build
+      # Шаг 4: Перезапуск Docker-контейнеров
+      - name: Docker build and restart
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
             cd ${{ secrets.REMOTE_PATH }}
@@ -34,10 +39,3 @@ jobs:
             docker-compose build
             docker-compose up -d
           "
-      - name: Migrations
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
-            cd ${{ secrets.REMOTE_PATH }} 
-            make migrate-up
-          "
-
