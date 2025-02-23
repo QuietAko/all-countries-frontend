@@ -3,10 +3,12 @@ version: '3.8'
 services:
   frontend:
     image: node:18
+    working_dir: /app
     volumes:
       - ./:/app
     ports:
-      - "5173:8080"
+      - "5173:5173"
+    command: sh -c "npm install && npm run build"  
     networks:
       - my-network
 
