@@ -12,26 +12,30 @@ jobs:
     steps:
       # Шаг 1: Клонирование репозитория
       - name: Checkout code
-        uses: actions/checkout@v3
+        run: |
+          git clone https://github.com/QuietAko/all-countries-frontend.git .
+          git checkout $GITHUB_SHA
 
       # Шаг 2: Настройка SSH
       - name: Install SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
-      # Шаг 3: Копирование исходного кода на сервер
-      - name: Copy source code to server
+      # Шаг 3: Синхронизация файлов с сервером
+      - name: Sync files to server
         run: |
-          scp -r . ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_PATH }}
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
+            . ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_PATH }}
 
       # Шаг 4: Перезапуск Docker-контейнеров
-      - name: Restart Docker containers
+      - name: Docker build and restart
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
             cd ${{ secrets.REMOTE_PATH }}
+            docker network create my-network || true
             docker-compose down
             docker-compose build
             docker-compose up -d
