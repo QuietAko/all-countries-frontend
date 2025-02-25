@@ -29,7 +29,7 @@
     },
     async created() {
       try {
-        const response = await axios.get<Country[]>('http://all-countries.local/api/country');
+        const response = await axios.get<Country[]>('http://all-countries.wazowskii.ru/api/country');
         this.countries = response.data;
       } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
