@@ -36,9 +36,21 @@ jobs:
             docker-compose build
             docker-compose up -d
           "
+
+      - name: Wait for frontend build
+        run: |
+          # Ожидание завершения сборки фронта
+          ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
+            cd ${{ secrets.REMOTE_PATH }}
+            while ! docker-compose logs frontend | grep -q 'built'; do
+              echo 'Waiting for frontend build to complete...'
+              sleep 5
+            done
+          "
+
       - name: Copy front to nginx
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
             cd ${{ secrets.REMOTE_PATH }}
             docker cp /home/deploy/frontend/dist backend_nginx_1:/usr/share/nginx/html
-          "      
+          "
