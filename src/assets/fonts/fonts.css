@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Architectural';
+  src: url('./Architectural-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Architectural-light';
+  src: url('./Architectural-Light.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Architectural-light-e';
+  src: url('./Architectural-LightExpanded.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
