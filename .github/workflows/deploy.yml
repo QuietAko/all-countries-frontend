@@ -10,13 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Шаг 1: Клонирование репозитория
       - name: Checkout code
         run: |
           git clone https://github.com/QuietAko/all-countries-frontend.git .
           git checkout $GITHUB_SHA
 
-      # Шаг 2: Настройка SSH
       - name: Install SSH key
         run: |
           mkdir -p ~/.ssh
@@ -24,13 +22,19 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
-      # Шаг 3: Синхронизация файлов с сервером
       - name: Sync files to server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
             . ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_PATH }}
 
-      # Шаг 4: Перезапуск Docker-контейнеров
+      - name: Copy front to nginx
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
+            cd ${{ secrets.REMOTE_PATH }}
+            docker cp /home/deploy/frontend/dist backend_nginx_1:/usr/share/nginx/html
+          "
+
+      
       - name: Docker build and restart
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "
